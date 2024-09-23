@@ -1,6 +1,8 @@
 # Bubble-Trader
 In this project I attempt to recreate a stock market using random agents as traders. The goal is to build a game that simulates day trading as realistically as possible.
 
+## Update: Materialize started misbehaving so I am switching to Bootstrap which is going slowly.
+
 ## What Is Going On Inside
 There are three main components.
 ### Trading Floor
