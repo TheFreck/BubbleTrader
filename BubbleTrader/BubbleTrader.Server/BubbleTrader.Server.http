@@ -1,0 +1,6 @@
+@BubbleTrader.Server_HostAddress = http://localhost:5137
+
+GET {{BubbleTrader.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

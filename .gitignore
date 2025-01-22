@@ -1,0 +1,8 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/BubbleTrader/.vs/BubbleTrader
+/BubbleTrader/BubbleTrader.Server/obj
+/BubbleTrader/BubbleTrader.Specs/obj
+/BubbleTrader/BubbleTrader.Specs/bin/Debug/net8.0
