@@ -9,15 +9,19 @@ const getBaseURL = (cb => {
     }
 });
 
-export const calculateFrame = async (frame,traders,cb) => {
+export const calculateFrame = async (frame,traders,sharePrice,cb) => {
     let next = (frame + 1);
-    let data = {
-        traders: calculateMove(traders)
-    }
-    cb({
-        frame: next,
-        data
-    });
+    calculateMove(traders,sharePrice,moved => {
+        let data = {
+            traders: moved.traders,
+            sharePrice: moved.sharePrice,
+
+        }
+        cb({
+            frame: next,
+            data
+        });
+    })
     // getBaseURL(url => {
     //     const api = axios.create({
     //         baseURL: url
@@ -54,10 +58,13 @@ export const createTraders = (qty,r,cb) => {
         traders.push({
             xPos: coords.x,
             yPos: coords.y,
-            xVel: Math.random(),
-            yVel: Math.random(),
+            xVel: Math.random()+Math.random(),
+            yVel: Math.random()+Math.random(),
             traderId: i,
-            r
+            r,
+            risk: Math.random(),
+            cash: 1000,
+            shares: 100
         });
     }
     cb(traders);
@@ -72,16 +79,37 @@ const validateCoordsAgainstTraders = ({x,y},r) => {
     return true;
 }
 
-const calculateMove = (traders) => {
+const calculateMove = (traders,sharePrice,cb) => {
+    let lastPrice = sharePrice;
+    let collisions = [];
     for(let mover of traders){
-        checkWalls(mover);
+        let checked = checkWalls(mover);
+        if(checked) collisions.push(checked);
         for(let shaker of traders){
             if(mover.traderId !== shaker.traderId){
-                findCollision(mover,shaker);
+                let collision = findCollision(mover,shaker);
+                if(collision) {
+                    collisions.push(collision);
+                    calculateTrade(mover,shaker,lastPrice,trade => {
+                        lastPrice = trade.tradePrice;
+                        trade.buyer.cash -= trade.tradePrice;
+                        trade.seller.cash += trade.tradePrice;
+                        trade.buyer.shares++;
+                        trade.seller.shares--;
+                    });
+                }
             }
         }
     }
-    return move(traders);
+    for(let c of collisions){
+        let trader = traders.find(t => t.traderId === c.id);
+        trader.xVel = c.xVel;
+        trader.yVel = c.yVel;
+    }
+    cb({
+        traders:move(traders),
+        sharePrice: lastPrice
+    });
 }
 
 const move = (traders) => {
@@ -98,18 +126,47 @@ const findCollision = (mover,shaker) => {
         let ny = Math.sin(normal);
         let nx = Math.cos(-normal);
         let dot = mover.xVel*nx + mover.yVel*ny;
-        mover.xVel = mover.xVel - 2*dot*nx;
-        mover.yVel = mover.yVel - 2*dot*ny;
+        return {
+            id: mover.traderId,
+            xVel: mover.xVel - 2*dot*nx,
+            yVel: mover.yVel - 2*dot*ny
+        };
     }
 }
 
 const checkWalls = (trader) => {
     if(trader.xPos-.95*trader.r<=Math.abs(trader.xVel) || trader.xPos+.95*trader.r>=100-Math.abs(trader.xVel)){
-        trader.xVel *= -1;
+        return {
+            id: trader.traderId,
+            xVel: trader.xVel * -1,
+            yVel: trader.yVel
+        };
     }
     else
     if(trader.yPos-.95*trader.r<=Math.abs(trader.yVel) || trader.yPos+.95*trader.r>=100-Math.abs(trader.yVel)){
-        trader.yVel *= -1;
+        return {
+            id: trader.traderId,
+            xVel: trader.xVel,
+            yVel: trader.yVel * -1
+        };
+    }
+}
+
+const calculateTrade = (mover,shaker,lastPrice,cb) => {
+    let randyMover = Math.random();
+    let randyShaker = Math.random();
+    let moverDiff = mover.risk-randyMover;
+    let shakerDiff = shaker.risk-randyShaker;
+    let buyer = moverDiff > shakerDiff ? mover : shaker;
+    let seller = moverDiff < shakerDiff ? mover : shaker;
+    let combinedDiff = (moverDiff+shakerDiff)/500;
+    let tradePrice = lastPrice * (1+combinedDiff);
+    if(buyer.cash > tradePrice && seller.shares >= 1){
+        cb({
+            buyer,
+            seller,
+            tradePrice
+        });
     }
 }
 

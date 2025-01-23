@@ -6,7 +6,7 @@ import { createTraders } from "../helpers/loopHelpers";
 export const LoopContainer = ({appId}) => {
     const [containerId,setContainerId] = useState(0);
     const [ready,setReady] = useState(false);
-    const [traderCount,setTraderCount] = useState(11);
+    const [traderCount,setTraderCount] = useState(30);
     const [tRadius, setTradius] = useState(1);
     const loopRef = useRef();
 
@@ -19,8 +19,7 @@ export const LoopContainer = ({appId}) => {
             setContainerId(0);
             init();
         }
-    },[])
-
+    },[]);
 
     const init = () => {
         createTraders(traderCount,tRadius,traders => {
@@ -31,7 +30,8 @@ export const LoopContainer = ({appId}) => {
                 isRunning: false,
                 isComplete: true,
                 data: {
-                    traders
+                    traders,
+                    sharePrice:10,
                 }
             }
             setReady(!ready);
@@ -39,10 +39,10 @@ export const LoopContainer = ({appId}) => {
     }
 
     const startStop = () => {
-        console.log("startstop");
         loopRef.current.isRunning = !loopRef.current.isRunning;
         setReady(!ready);
     }
+
 
     const LoopMechanismCallback = useCallback(() => <LoopMechanism containerId={containerId} loopRef={loopRef} init={init} />,[ready,containerId]);
 
@@ -56,7 +56,7 @@ export const LoopContainer = ({appId}) => {
         <Button
             onClick={startStop}
         >
-            {loopRef?.current?.isRunning ? "Stop it" : "Start it"}
+            {loopRef?.current?.isRunning ? "Stop" : "Start"}
         </Button>
         <LoopMechanismCallback />
     </Box>
