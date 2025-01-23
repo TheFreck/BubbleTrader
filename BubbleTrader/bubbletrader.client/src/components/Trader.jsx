@@ -14,13 +14,13 @@ export const Trader = ({xPos,yPos,traderId,r}) => {
                 fill="transparent"
                 strokeWidth=".1"
             />
-            <text
+            {/* <text
                 fontSize={".2em"}
                 x={xPos}
                 y={yPos}
             >
                 {traderId}
-            </text>
+            </text> */}
         </>
     );
 }

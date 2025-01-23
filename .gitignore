@@ -6,3 +6,7 @@
 /BubbleTrader/BubbleTrader.Server/obj
 /BubbleTrader/BubbleTrader.Specs/obj
 /BubbleTrader/BubbleTrader.Specs/bin/Debug/net8.0
+/BubbleTrader/bubbletrader.client/obj/Release
+/BubbleTrader/BubbleTrader.Server/.config
+/BubbleTrader/BubbleTrader.Server/bin/Release/net8.0
+/BubbleTrader/BubbleTrader.Specs/bin/Release/net8.0
