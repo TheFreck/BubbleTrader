@@ -2,32 +2,30 @@ import { Box, Typography } from "@mui/material"
 import { useCallback, useEffect, useState } from "react";
 import { calculateFrame } from "../helpers/loopHelpers";
 import Trader from "../components/Trader";
-import Chart from "../components/Chart";
+import ChartComponent from "../components/ChartComponent";
 import { LineChart } from "@mui/x-charts";
 
-export const LoopMechanism = ({loopRef}) => {
+export const LoopMechanism = ({loopRef,history}) => {
+    const [isRunning, setIsRunning] = useState(false);
     const [frame,setFrame] = useState(0);
     const [floorWidth, setFloorWidth] = useState(50);
-    const [history,setHistory] = useState([{
-        frame: 0,
-        price: 10
-    }]);
-    const [redrawChart,sertRedrawChart] = useState(false);
 
     useEffect(() => {
         if(loopRef?.current?.loopId !== 0 && loopRef?.current?.loopFrame !== undefined){
             setFrame(loopRef.current.loopFrame);
             if(loopRef?.current?.isRunning){
+                setIsRunning(true);
                 loopRef.current.intId = setInterval(march,100,cb => {
                     setFrame(cb.frame);
-                    if(cb.frame%10 === 0) sertRedrawChart(!redrawChart);
                     loopRef.current.loopFrame = cb.frame;
                     loopRef.current.data = cb.data;
-                    history.push({frame: cb.frame,price:Math.round(cb.data.sharePrice*1000)/1000});
-                    console.log("loop history: ", history);
+                    history.push(Math.round(cb.data.sharePrice*10000)/10000);
                     loopRef.current.isComplete = cb.continue;
                     if(!cb.continue) clearInterval(loopRef?.current?.intId);
                 })
+            }
+            else{
+                setIsRunning(false);
             }
         }
         return () => clearInterval(loopRef?.current?.intId);
@@ -42,17 +40,13 @@ export const LoopMechanism = ({loopRef}) => {
             })
         }
     }
-
-    const ChartCallback = useCallback(() => <Chart 
-        history={history}
-    />)
     
     const Floor = () => (
         <>
             <svg
                 viewBox={`0 0 100 100`}
-                width={`${floorWidth-10}vw`}
-                height={`${floorWidth-10}vw`}
+                width={`${40}vw`}
+                height={`${40}vw`}
                 xmlns="http://www.w3.org/2000/svg"
                 style={{
                     border: "solid",
@@ -79,18 +73,12 @@ export const LoopMechanism = ({loopRef}) => {
                     ))
                 }
             </svg>
-            <LineChart 
-                dataset={history}
-                xAxis={[{dataKey: "frame"}]}
-                series={[{dataKey: "price"}]}
-                width={1000}
-                height={600}
-            />
+            
         </>
-        );
-
+    );
+        
     const TradingFloorCallback = useCallback(() => <Floor />,[frame]);
-
+        
     return <TradingFloorCallback />
 }
 

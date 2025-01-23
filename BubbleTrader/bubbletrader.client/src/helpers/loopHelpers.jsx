@@ -67,6 +67,11 @@ export const createTraders = (qty,r,cb) => {
             shares: 100
         });
     }
+    let total = 0;
+    for(let trader of traders){
+        total += trader.risk;
+    }
+    console.log("market risk: ", total/qty);
     cb(traders);
 }
 
