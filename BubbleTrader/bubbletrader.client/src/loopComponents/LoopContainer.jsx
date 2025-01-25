@@ -3,14 +3,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import LoopMechanism from "./LoopMechanisms";
 import { createTraders } from "../helpers/loopHelpers";
 import ChartComponent from "../components/ChartComponent";
+import TradeTicket from "../components/TradeTicket";
 
 export const LoopContainer = ({appId}) => {
     const [containerId,setContainerId] = useState(0);
     const [ready,setReady] = useState(false);
     const [traderCount,setTraderCount] = useState(40);
     const [tRadius, setTradius] = useState(1);
-    const loopRef = useRef();
     const [history,setHistory] = useState([10]);
+    const [traded,setTraded] = useState(false);
+    const loopRef = useRef();
 
     useEffect(() => {
         if(appId !== 0){
@@ -27,6 +29,16 @@ export const LoopContainer = ({appId}) => {
         cb(history);
     }
 
+    const getPrice = (cb) => {
+        cb(loopRef.current.data.sharePrice);
+    }
+
+    const trade = (bs) => {
+        loopRef.current.data.playerCash -= (loopRef.current.data.sharePrice*bs);
+        loopRef.current.data.playerShares += bs;
+        setTraded(!traded);
+    }
+
     const init = () => {
         createTraders(traderCount,tRadius,traders => {
             loopRef.current = {
@@ -38,6 +50,8 @@ export const LoopContainer = ({appId}) => {
                 data: {
                     traders,
                     sharePrice:10,
+                    playerCash:1000,
+                    playerShares: 100
                 }
             }
             setReady(!ready);
@@ -57,6 +71,12 @@ export const LoopContainer = ({appId}) => {
     ,[ready]);
 
     const LoopMechanismCallback = useCallback(() => <LoopMechanism containerId={containerId} loopRef={loopRef} init={init} history={history} />,[ready,containerId]);
+
+    const TradeTicketCallback = useCallback(() => <TradeTicket
+        trade={trade}
+        shares={loopRef?.current?.data?.playerShares}
+        cash={loopRef?.current?.data?.playerCash}
+    />,[traded]);
 
     return <Box
         sx={{
@@ -80,6 +100,7 @@ export const LoopContainer = ({appId}) => {
         >
             <LoopMechanismCallback />
             <ChartComponentCallback />
+            <TradeTicketCallback />
         </Box>
     </Box>
 }

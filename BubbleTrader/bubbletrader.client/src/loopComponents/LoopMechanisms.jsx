@@ -36,6 +36,8 @@ export const LoopMechanism = ({loopRef,history}) => {
             loopRef.current.isCopmlete = false;
             calculateFrame(loopRef.current.loopFrame,loopRef.current.data.traders,loopRef.current.data.sharePrice,loop => {
                 if(loopRef.current.isRunning) loop.continue = true;
+                loop.data.playerCash = loopRef.current.data.playerCash;
+                loop.data.playerShares = loopRef.current.data.playerShares;
                 cb(loop);
             })
         }

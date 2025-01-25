@@ -51,6 +51,16 @@ const getCoords = (r) => {
     return coords;
 }
 
+const getRisk = (rando) => {
+    let a = 2.65;
+    let b = 1.2;
+    let c = -10;
+    let d = -.47;
+    let risk = ((Math.pow(a*rando-b,8)-Math.pow(a*rando-b,6)-Math.pow(a*rando-b,4)-Math.pow(a*rando-b,3))/c)-d;
+    console.log(rando,risk);
+    return risk;
+}
+
 export const createTraders = (qty,r,cb) => {
     let traders = [];
     for(let i=0; i<qty; i++){
@@ -62,7 +72,7 @@ export const createTraders = (qty,r,cb) => {
             yVel: Math.random()+Math.random(),
             traderId: i,
             r,
-            risk: Math.random(),
+            risk: getRisk(Math.random()),
             cash: 1000,
             shares: 100
         });
