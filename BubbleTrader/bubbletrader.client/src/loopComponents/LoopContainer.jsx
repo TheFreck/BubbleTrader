@@ -26,7 +26,7 @@ export const LoopContainer = ({appId}) => {
         }
     },[]);
 
-    useEffect(() => console.log("ready: ", ready),[ready]);
+    // useEffect(() => console.log("ready: ", ready),[ready]);
 
     const getHistory = (cb) => {
         cb(history);

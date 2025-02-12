@@ -58,7 +58,6 @@ const getRisk = (rando) => {
     let d = 5;
     let unit = (a*rando-b);
     let risk = (-Math.pow(unit,6)+Math.pow(unit,4)+Math.pow(unit,2)+unit-c)/d;
-    console.log(rando, risk);
     return risk;
 }
 

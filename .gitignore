@@ -10,3 +10,5 @@
 /BubbleTrader/BubbleTrader.Server/.config
 /BubbleTrader/BubbleTrader.Server/bin/Release/net8.0
 /BubbleTrader/BubbleTrader.Specs/bin/Release/net8.0
+/BubbleTrader/BubbleTrader.Server/bin/Debug/net8.0
+/BubbleTrader/bubbletrader.client/obj/Debug

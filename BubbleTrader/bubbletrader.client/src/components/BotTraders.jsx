@@ -52,9 +52,7 @@ export const BotTraders = ({getTraders,getSharePrice,isRunning}) => {
     const reorder = (col,direction) => {
         setOrderDirection(direction);
         setOrderBy(col);
-        console.log("reorder col: ", col);
         botRef.current.traders.sort((a,b) => direction ? a[col]-b[col] : b[col]-a[col]);
-        console.log("botTraders: ", botRef.current.traders.map(t => t.traderId));
         setReady(!ready);
     }
 
