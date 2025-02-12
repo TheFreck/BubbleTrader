@@ -1,20 +1,22 @@
 import { Box, Button, Typography } from "@mui/material";
 
-export const TradeTicket = ({trade,shares,cash}) => {
+export const TradeTicket = ({trade,shares,cash,sharePrice}) => {
 
     return <Box
         sx={{
             border: "solid",
             height: "20vh",
-            width: "40vw"
+            width: "20vw",
         }}
     >
-        Trade Ticket
         <Typography>
             Shares: {shares}
         </Typography>
         <Typography>
             Cash: {new Intl.NumberFormat("en-US", {style: "currency", currency: "USD"}).format(cash)}
+        </Typography>
+        <Typography>
+            Networth: {new Intl.NumberFormat("en-US", {style: "currency", currency: "USD"}).format(cash + sharePrice*shares)}
         </Typography>
         <Button
             onClick={() => trade(1)}

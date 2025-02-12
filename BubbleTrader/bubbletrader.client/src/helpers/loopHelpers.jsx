@@ -52,12 +52,13 @@ const getCoords = (r) => {
 }
 
 const getRisk = (rando) => {
-    let a = 2.65;
-    let b = 1.2;
-    let c = -10;
-    let d = -.47;
-    let risk = ((Math.pow(a*rando-b,8)-Math.pow(a*rando-b,6)-Math.pow(a*rando-b,4)-Math.pow(a*rando-b,3))/c)-d;
-    console.log(rando,risk);
+    let a = 2;
+    let b = .96;
+    let c = -2.1;
+    let d = 5;
+    let unit = (a*rando-b);
+    let risk = (-Math.pow(unit,6)+Math.pow(unit,4)+Math.pow(unit,2)+unit-c)/d;
+    console.log(rando, risk);
     return risk;
 }
 

@@ -1,9 +1,10 @@
-import { Box, Button, Typography } from "@mui/material"
+import { Box, Button, Grid2, Typography } from "@mui/material"
 import { useCallback, useEffect, useRef, useState } from "react";
 import LoopMechanism from "./LoopMechanisms";
 import { createTraders } from "../helpers/loopHelpers";
 import ChartComponent from "../components/ChartComponent";
 import TradeTicket from "../components/TradeTicket";
+import BotTraders from "../components/BotTraders";
 
 export const LoopContainer = ({appId}) => {
     const [containerId,setContainerId] = useState(0);
@@ -24,6 +25,8 @@ export const LoopContainer = ({appId}) => {
             init();
         }
     },[]);
+
+    useEffect(() => console.log("ready: ", ready),[ready]);
 
     const getHistory = (cb) => {
         cb(history);
@@ -70,13 +73,26 @@ export const LoopContainer = ({appId}) => {
         />
     ,[ready]);
 
-    const LoopMechanismCallback = useCallback(() => <LoopMechanism containerId={containerId} loopRef={loopRef} init={init} history={history} />,[ready,containerId]);
+    const LoopMechanismCallback = useCallback(() => <LoopMechanism 
+        containerId={containerId} 
+        loopRef={loopRef} 
+        init={init} 
+        history={history} 
+    />,[ready,containerId]);
 
     const TradeTicketCallback = useCallback(() => <TradeTicket
         trade={trade}
         shares={loopRef?.current?.data?.playerShares}
         cash={loopRef?.current?.data?.playerCash}
+        sharePrice={loopRef?.current?.data?.sharePrice}
     />,[traded]);
+
+    const BotTradersCallback = useCallback(() => loopRef.current && loopRef.current.data && loopRef.current.data.traders && loopRef.current.data.sharePrice && 
+    <BotTraders 
+        getTraders={() => loopRef.current.data.traders} 
+        getSharePrice={() => loopRef.current.data.sharePrice}
+        isRunning={loopRef.current.isRunning}
+    />, [ready]);
 
     return <Box
         sx={{
@@ -98,9 +114,30 @@ export const LoopContainer = ({appId}) => {
                 marginLeft: "5vw"
             }}
         >
-            <LoopMechanismCallback />
-            <ChartComponentCallback />
-            <TradeTicketCallback />
+            <Grid2
+                container
+                size={12}
+            >
+                <Grid2
+                    container
+                    spacing={1}
+                    size={4}
+                    sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center"
+                    }}
+                >
+                    <LoopMechanismCallback />
+                    <TradeTicketCallback />
+                </Grid2>
+                <Grid2
+                    size={8}
+                >
+                    <ChartComponentCallback />
+                    <BotTradersCallback />
+                </Grid2>
+            </Grid2>
         </Box>
     </Box>
 }

@@ -8,7 +8,6 @@ import { LineChart } from "@mui/x-charts";
 export const LoopMechanism = ({loopRef,history}) => {
     const [isRunning, setIsRunning] = useState(false);
     const [frame,setFrame] = useState(0);
-    const [floorWidth, setFloorWidth] = useState(50);
 
     useEffect(() => {
         if(loopRef?.current?.loopId !== 0 && loopRef?.current?.loopFrame !== undefined){
@@ -16,6 +15,7 @@ export const LoopMechanism = ({loopRef,history}) => {
             if(loopRef?.current?.isRunning){
                 setIsRunning(true);
                 loopRef.current.intId = setInterval(march,100,cb => {
+                    if(cb.frame >= 4000) loopRef.current.isRunning = false;
                     setFrame(cb.frame);
                     loopRef.current.loopFrame = cb.frame;
                     loopRef.current.data = cb.data;
@@ -47,8 +47,8 @@ export const LoopMechanism = ({loopRef,history}) => {
         <>
             <svg
                 viewBox={`0 0 100 100`}
-                width={`${40}vw`}
-                height={`${40}vw`}
+                width={`${20}vw`}
+                height={`${20}vw`}
                 xmlns="http://www.w3.org/2000/svg"
                 style={{
                     border: "solid",

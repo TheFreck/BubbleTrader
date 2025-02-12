@@ -38,22 +38,22 @@ export const ChartComponent = ({getHistory,isRunning}) => {
     }
 
     return <Chart 
-    style={{
-        width: "50vw",
-        height: "50vh",
+        style={{
+            width: "60vw",
+            height: "50vh",
 
-    }}
-    options={{
-        chart: {
-            type: "candlestick"
-        },
-        series: {
-            data: pixels
-        }
-    }}
-    series={pixels}
-    type="candlestick"
-/>
+        }}
+        options={{
+            chart: {
+                type: "candlestick"
+            },
+            series: {
+                data: pixels
+            }
+        }}
+        series={pixels}
+        type="candlestick"
+    />
 }
 
 export default ChartComponent;
