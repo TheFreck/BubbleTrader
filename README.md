@@ -1,4 +1,4 @@
-# Bubble-Trader
+# [Bubble-Trader](https://bubbletraderserver20250122211424.azurewebsites.net/)
 In this project I attempt to recreate a stock market using random agents as traders. The goal is to build a game that simulates day trading as realistically as possible.
 
 ### [Built on the React Game Loop](https://github.com/TheFreck/ReactGameLoop)
