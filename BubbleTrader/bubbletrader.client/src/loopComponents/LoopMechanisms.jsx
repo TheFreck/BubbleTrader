@@ -1,6 +1,6 @@
 import { Box, Modal, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material"
 import { useCallback, useEffect, useState } from "react";
-import { calculateFrame } from "../helpers/loopHelpers";
+import { calculateFrame,closeMarket } from "../helpers/loopHelpers";
 import Trader from "../components/Trader";
 
 export const LoopMechanism = ({loopRef,history}) => {
@@ -10,46 +10,36 @@ export const LoopMechanism = ({loopRef,history}) => {
     const [topFive,setTopFive] = useState([]);
     const [bottomFive,setBottomFive] = useState([]);
     const [playerRank, setPlayerRank] = useState(0);
-    const stopAfter = 100;
+    const stopAfter = 5000;
 
     useEffect(() => {
-        if(loopRef?.current?.loopId !== 0 && loopRef?.current?.loopFrame !== undefined){
+        if(loopRef?.current?.loopId !== 0 && loopRef?.current?.loopFrame !== undefined && loopRef.current.data.marketSentiment !== NaN){
             setFrame(loopRef.current.loopFrame);
             if(loopRef?.current?.isRunning){
                 setIsRunning(true);
+                for(let i=0; i<100; i++){
+                    march(cb => {
+                        loopRef.current.data = cb.data;
+                        history.push(Math.round(cb.data.sharePrice*10000)/10000);
+                    });
+                }
+                for(let trader of loopRef.current.data.traders){
+                    trader.cash = 1000;
+                    trader.shares = 100;
+                }
                 loopRef.current.intId = setInterval(march,100,cb => {
                     if(cb.frame >= stopAfter) {
-                        loopRef.current.isRunning = false;
-                        loopRef.current.data.traders.push({
-                            cash: loopRef.current.data.playerCash,
-                            shares: loopRef.current.data.playerShares,
-                            netWorth: loopRef.current.data.playerShares*loopRef.current.data.sharePrice+loopRef.current.data.playerCash,
-                            traderId: "You"
-                        })
-                        loopRef.current.data.traders.sort((a,b) => a.netWorth-b.netWorth);
-                        let you = loopRef.current.data.traders.find(t => t.traderId==="You");
-                        setPlayerRank(loopRef.current.data.traders.indexOf(you)+1);
-                        setTopFive([
-                            loopRef.current.data.traders[0],
-                            loopRef.current.data.traders[1],
-                            loopRef.current.data.traders[2],
-                            loopRef.current.data.traders[3],
-                            loopRef.current.data.traders[4]
-                        ]);
-                        setBottomFive([
-                            loopRef.current.data.traders[loopRef.current.data.traders.length-5],
-                            loopRef.current.data.traders[loopRef.current.data.traders.length-4],
-                            loopRef.current.data.traders[loopRef.current.data.traders.length-3],
-                            loopRef.current.data.traders[loopRef.current.data.traders.length-2],
-                            loopRef.current.data.traders[loopRef.current.data.traders.length-1]
-                        ])
-                        cb.continue = false;
-                        setMarketClosed(true);
+                        closeMarket(loopRef.current,setPlayerRank,setTopFive,setBottomFive,() => {
+                            cb.continue = false;
+                            setMarketClosed(true);
+                        });
                     }
                     setFrame(cb.frame);
                     loopRef.current.loopFrame = cb.frame;
                     loopRef.current.data = cb.data;
                     history.push(Math.round(cb.data.sharePrice*10000)/10000);
+                    let change = 1/(history[history.length-1] - history[history.length-20])*Math.random();
+                    loopRef.current.data.marketSentiment *= -change;
                     loopRef.current.isComplete = cb.continue;
                     if(!cb.continue) clearInterval(loopRef?.current?.intId);
                     
@@ -65,10 +55,16 @@ export const LoopMechanism = ({loopRef,history}) => {
     const march = async (cb) => {
         if(loopRef && loopRef.current && loopRef.current.intId !== 0 && loopRef.current.isComplete){
             loopRef.current.isCopmlete = false;
-            calculateFrame(loopRef.current.loopFrame,loopRef.current.data.traders,loopRef.current.data.sharePrice,loop => {
+            calculateFrame(loopRef.current.loopFrame,loopRef.current.data.traders,loopRef.current.data.sharePrice,loopRef.current.data.marketSentiment,loop => {
                 if(loopRef.current.isRunning) loop.continue = true;
                 loop.data.playerCash = loopRef.current.data.playerCash;
                 loop.data.playerShares = loopRef.current.data.playerShares;
+                let totalRisk = 0;
+                for(let trader of loopRef.current.data.traders){
+                    totalRisk += trader.risk;
+                }
+                loop.data.marketSentiment = totalRisk/loopRef.current.data.traders.length;
+                console.log("market sentiment: ", loop.data.marketSentiment);
                 cb(loop);
             })
         }
@@ -77,6 +73,9 @@ export const LoopMechanism = ({loopRef,history}) => {
     const TopBody = () => topFive.map((t,i) => 
         <TableRow
             key={i}
+            sx={{
+                background: `${t.traderId === "You" ? "green" : ""}`
+            }}
         >
             <TableCell>
                 {i+1}
@@ -99,6 +98,9 @@ export const LoopMechanism = ({loopRef,history}) => {
     const BottomBody = () => bottomFive.map((t,i) => 
         <TableRow
             key={i}
+            sx={{
+                background: `${t.traderId === "You" ? "red" : ""}`
+            }}
         >
             <TableCell>
                 {loopRef.current.data.traders.length-(4-i)}
@@ -196,17 +198,13 @@ export const LoopMechanism = ({loopRef,history}) => {
                             <TableCell>
                                 ...
                             </TableCell>
-                            <TableCell
-                                // sx={{textAlign: "center"}}
-                            >
+                            <TableCell>
                                 ...
                             </TableCell>
                             <TableCell>
                                 ...
                             </TableCell>
-                            <TableCell
-                                // sx={{textAlign: "center"}}
-                            >
+                            <TableCell>
                                 ...
                             </TableCell>
                         </TableRow>
@@ -214,7 +212,6 @@ export const LoopMechanism = ({loopRef,history}) => {
                     </TableBody>
                 </Table>
             </TableContainer>
-
         </Box>
     </Modal>
     

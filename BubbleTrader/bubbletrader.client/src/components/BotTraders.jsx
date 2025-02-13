@@ -86,6 +86,12 @@ export const BotTraders = ({getTraders,getSharePrice,isRunning}) => {
                         >
                             Networth
                         </TableCell>
+                        <TableCell
+                            sx={{cursor: "pointer"}}
+                            onClick={() => orderBy==="risk" ? reorder("risk",!orderDirection) : reorder("risk", orderDirection)}
+                        >
+                            Risk Tolerance
+                        </TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -98,6 +104,7 @@ export const BotTraders = ({getTraders,getSharePrice,isRunning}) => {
                                 <TableCell>{new Intl.NumberFormat("en-US", {style: "currency", currency: "USD"}).format(t.cash)}</TableCell>
                                 <TableCell>{t.shares}</TableCell>
                                 <TableCell>{new Intl.NumberFormat("en-US", {style: "currency", currency: "USD"}).format(t.netWorth)}</TableCell>
+                                <TableCell>{t.risk}</TableCell>
                             </TableRow>
                         ))
                     }

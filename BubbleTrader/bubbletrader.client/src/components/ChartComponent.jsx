@@ -34,7 +34,10 @@ export const ChartComponent = ({getHistory,isRunning}) => {
             let pixel = [constituents[0],Math.max(...constituents),Math.min(...constituents),constituents[constituents.length-1]];
             pix.push([i/pixelSize,pixel]);
         }
-        cb(pix);
+        let remove = pix.length-30;
+        let chartData = pix.filter((p,i) => i>= remove);
+        console.log("chartData: ", chartData);
+        cb(chartData);
     }
 
     return <Chart 

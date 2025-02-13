@@ -9,9 +9,9 @@ const getBaseURL = (cb => {
     }
 });
 
-export const calculateFrame = async (frame,traders,sharePrice,cb) => {
+export const calculateFrame = async (frame,traders,sharePrice,sentiment,cb) => {
     let next = (frame + 1);
-    calculateMove(traders,sharePrice,moved => {
+    calculateMove(traders,sharePrice,sentiment,moved => {
         let data = {
             traders: moved.traders,
             sharePrice: moved.sharePrice,
@@ -52,12 +52,11 @@ const getCoords = (r) => {
 }
 
 const getRisk = (rando) => {
-    let a = 2;
-    let b = .96;
-    let c = -2.1;
-    let d = 5;
-    let unit = (a*rando-b);
-    let risk = (-Math.pow(unit,6)+Math.pow(unit,4)+Math.pow(unit,2)+unit-c)/d;
+    let a= .6;
+    let b = 14.6;
+    let c = .9;
+    let d = .35;
+    let risk = a*Math.exp(-b*Math.pow(rando-c,2))+d;
     return risk;
 }
 
@@ -70,7 +69,7 @@ export const createTraders = (qty,r,cb) => {
             yPos: coords.y,
             xVel: Math.random()+Math.random(),
             yVel: Math.random()+Math.random(),
-            traderId: i,
+            traderId: "t-"+i,
             r,
             risk: getRisk(Math.random()),
             cash: 1000,
@@ -94,7 +93,7 @@ const validateCoordsAgainstTraders = ({x,y},r) => {
     return true;
 }
 
-const calculateMove = (traders,sharePrice,cb) => {
+const calculateMove = (traders,sharePrice,sentiment,cb) => {
     let lastPrice = sharePrice;
     let collisions = [];
     for(let mover of traders){
@@ -105,7 +104,7 @@ const calculateMove = (traders,sharePrice,cb) => {
                 let collision = findCollision(mover,shaker);
                 if(collision) {
                     collisions.push(collision);
-                    calculateTrade(mover,shaker,lastPrice,trade => {
+                    calculateTrade(mover,shaker,lastPrice,sentiment,trade => {
                         lastPrice = trade.tradePrice;
                         trade.buyer.cash -= trade.tradePrice;
                         trade.seller.cash += trade.tradePrice;
@@ -120,6 +119,8 @@ const calculateMove = (traders,sharePrice,cb) => {
         let trader = traders.find(t => t.traderId === c.id);
         trader.xVel = c.xVel;
         trader.yVel = c.yVel;
+        trader.xPos += c.xVel;
+        trader.yPos += c.yVel;
     }
     cb({
         traders:move(traders),
@@ -136,7 +137,7 @@ const move = (traders) => {
 }
 
 const findCollision = (mover,shaker) => {
-    if(Math.sqrt((mover.xPos-shaker.xPos)*(mover.xPos-shaker.xPos)+(mover.yPos-shaker.yPos)*(mover.yPos-shaker.yPos)) <= 1.01*(mover.r + shaker.r)){
+    if(Math.sqrt((mover.xPos-shaker.xPos)*(mover.xPos-shaker.xPos)+(mover.yPos-shaker.yPos)*(mover.yPos-shaker.yPos)) <= 1.2*(mover.r + shaker.r)){
         let normal = Math.atan((mover.yPos-shaker.yPos)/(mover.xPos-shaker.xPos));
         let ny = Math.sin(normal);
         let nx = Math.cos(-normal);
@@ -167,25 +168,57 @@ const checkWalls = (trader) => {
     }
 }
 
-const calculateTrade = (mover,shaker,lastPrice,cb) => {
+const calculateTrade = (mover,shaker,lastPrice,marketSentiment,cb) => {
     let randyMover = Math.random();
     let randyShaker = Math.random();
     let moverDiff = mover.risk-randyMover;
     let shakerDiff = shaker.risk-randyShaker;
     let buyer = moverDiff > shakerDiff ? mover : shaker;
     let seller = moverDiff < shakerDiff ? mover : shaker;
-    let combinedDiff = (moverDiff+shakerDiff)/500;
+    buyer.risk*=1-(moverDiff-shakerDiff)/100;
+    seller.risk*=1+(moverDiff-shakerDiff)/100;
+    let combinedDiff = (moverDiff+shakerDiff)/400;
     let tradePrice = lastPrice * (1+combinedDiff);
     if(buyer.cash > tradePrice && seller.shares >= 1){
         cb({
             buyer,
             seller,
-            tradePrice
+            tradePrice,
+            marketSentiment
         });
     }
 }
 
+export const closeMarket = (current,setPlayerRank,setTopFive,setBottomFive,cb) => {
+    current.isRunning = false;
+    current.data.traders.push({
+        cash: current.data.playerCash,
+        shares: current.data.playerShares,
+        netWorth: current.data.playerShares*current.data.sharePrice+current.data.playerCash,
+        traderId: "You"
+    })
+    current.data.traders.sort((a,b) => b.netWorth-a.netWorth);
+    let you = current.data.traders.find(t => t.traderId==="You");
+    setPlayerRank(current.data.traders.indexOf(you)+1);
+    setTopFive([
+        current.data.traders[0],
+        current.data.traders[1],
+        current.data.traders[2],
+        current.data.traders[3],
+        current.data.traders[4]
+    ]);
+    setBottomFive([
+        current.data.traders[current.data.traders.length-5],
+        current.data.traders[current.data.traders.length-4],
+        current.data.traders[current.data.traders.length-3],
+        current.data.traders[current.data.traders.length-2],
+        current.data.traders[current.data.traders.length-1]
+    ])
+    cb();
+}
+
 export default {
     calculateFrame,
-    createTraders
+    createTraders,
+    closeMarket
 };

@@ -51,6 +51,7 @@ export const LoopContainer = ({appId}) => {
                 isRunning: false,
                 isComplete: true,
                 data: {
+                    marketSentiment: .1,
                     traders,
                     sharePrice:10,
                     playerCash:1000,
@@ -67,7 +68,7 @@ export const LoopContainer = ({appId}) => {
     }
 
 
-    const ChartComponentCallback = useCallback(() => loopRef?.current?.isRunning && <ChartComponent 
+    const ChartComponentCallback = useCallback(() => <ChartComponent 
             getHistory={getHistory}
             isRunning={loopRef?.current?.isRunning}
         />
@@ -78,7 +79,7 @@ export const LoopContainer = ({appId}) => {
         loopRef={loopRef} 
         init={init} 
         history={history} 
-    />,[ready,containerId]);
+    ></LoopMechanism>,[ready,containerId]);
 
     const TradeTicketCallback = useCallback(() => <TradeTicket
         trade={trade}
@@ -101,11 +102,14 @@ export const LoopContainer = ({appId}) => {
             padding: 0
         }}
     >
-        <Button
-            onClick={startStop}
-        >
-            {loopRef?.current?.isRunning ? "Stop" : "Start"}
-        </Button>
+        {
+            !loopRef?.current?.isRunning &&
+            <Button
+                onClick={startStop}
+            >
+                Start
+            </Button>
+        }
         <Box
             sx={{
                 display: "flex", 
